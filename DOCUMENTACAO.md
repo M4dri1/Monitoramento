@@ -68,14 +68,14 @@ monitoramento/
 ### Passo 3: Acessar
 Após o deploy (2-3 minutos), acesse:
 ```
-https://monitoring-dashboard.onrender.com
+https://monitoramento-5smo.onrender.com
 ```
 
 ## 🔄 Integração com Prometheus
 Modifique o script `send_metrics.py`:
 ```python
 # Para nuvem:
-CLOUD_API = "https://monitoring-dashboard.onrender.com/api/receive-metrics"
+CLOUD_API = "https://monitoramento-5smo.onrender.com/api/receive-metrics"
 
 # Para local:
 # CLOUD_API = "http://localhost:3000/api/receive-metrics"
@@ -100,4 +100,4 @@ PORT=3001 npm start
 rm -rf node_modules
 npm cache clean --force
 npm install
-``
+```
