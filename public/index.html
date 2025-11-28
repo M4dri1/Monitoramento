@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Monitoramento Remoto</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="header-content">
+        <h1 class="text-gradient">📊 Dashboard de Monitoramento Remoto</h1>
+        <div class="status-indicator">
+          <span class="status-dot"></span>
+          <span>Sistema Ativo</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="dashboard-grid">
+        <div v-for="server in servers" :key="server.id" class="card">
+          <div class="card-header">
+            <h2 class="card-title">{{ server.name }}</h2>
+            <span class="server-status status-online">🟢 Online</span>
+          </div>
+          <div class="card-body">
+            <div class="metric-row">
+              <span class="metric-label">💻CPU</span>
+              <span class="metric-value">{{ server.cpu.toFixed(1) }}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" :class="getCpuClass(server.cpu)" :style="{ width: server.cpu + '%' }"></div>
+            </div>
+
+            <div class="metric-row">
+              <span class="metric-label">🧠Memória RAM</span>
+              <span class="metric-value">{{ server.ram.toFixed(1) }}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" :class="getRamClass(server.ram)" :style="{ width: server.ram + '%' }"></div>
+            </div>
+
+            <div class="metric-row">
+              <span class="metric-label">💾Disco</span>
+              <span class="metric-value">{{ server.disk.toFixed(1) }}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" :class="getDiskClass(server.disk)" :style="{ width: server.disk + '%' }"></div>
+            </div>
+
+            <div class="metric-row">
+              <span class="metric-label">🌐Rede</span>
+              <span class="metric-value">{{ server.network }} Mbps</span>
+            </div>
+
+            <div class="metric-row">
+              <span class="metric-label">⏱️ Uptime:</span>
+              <span class="metric-value">{{ server.uptime }} horas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alerts-section" v-if="alerts.length > 0">
+        <h3 class="alerts-title">🚨 Alertas Ativos</h3>
+        <div v-for="(alert, index) in alerts" :key="index" class="alert-item">
+          <div class="alert-message">{{ alert.message }}</div>
+          <div class="alert-time">{{ formatTime(alert.timestamp) }}</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const servers = ref([
+          {
+            id: 1,
+            name: 'Server Local - Prometheus',
+            ip: '192.168.1.100',
+            cpu: 45.0,
+            ram: 62.4,
+            disk: 78.9,
+            network: 125,
+            uptime: 45
+          },
+          {
+            id: 2,
+            name: 'Server Backup',
+            ip: '192.168.1.101',
+            cpu: 36.4,
+            ram: 39.9,
+            disk: 53.9,
+            network: 156,
+            uptime: 120
+          },
+          {
+            id: 3,
+            name: 'Database Server',
+            ip: '192.168.1.102',
+            cpu: 77.5,
+            ram: 87.2,
+            disk: 91.0,
+            network: 226,
+            uptime: 240
+          }
+        ]);
+
+        const alerts = ref([
+          {
+            message: 'Database Server - RAM: 87.24% - Limite crítico atingido',
+            timestamp: new Date()
+          }
+        ]);
+
+        const fetchMetrics = async () => {
+          try {
+            const response = await fetch('/api/metrics');
+            const data = await response.json();
+            servers.value = data.servers;
+          } catch (error) {
+            console.error('Erro ao buscar métricas:', error);
+          }
+        };
+
+        const getCpuClass = (value) => {
+          if (value < 70) return 'low';
+          if (value < 90) return 'medium';
+          return 'high';
+        };
+
+        const getRamClass = (value) => {
+          if (value < 70) return 'low';
+          if (value < 90) return 'medium';
+          return 'high';
+        };
+
+        const getDiskClass = (value) => {
+          if (value < 70) return 'low';
+          if (value < 90) return 'medium';
+          return 'high';
+        };
+
+        const formatTime = (date) => {
+          return new Date(date).toLocaleTimeString();
+        };
+
+        onMounted(() => {
+          fetchMetrics();
+          setInterval(fetchMetrics, 3000);
+        });
+
+        return {
+          servers,
+          alerts,
+          getCpuClass,
+          getRamClass,
+          getDiskClass,
+          formatTime
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
